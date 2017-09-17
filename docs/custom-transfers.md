@@ -35,6 +35,13 @@ without querying the server, by using the following config option:
   should be made. The custom transfer agent has to be defined in a
   `lfs.customtransfer.<name>` settings group.
 
+* `lfs.<url>.standalonetransfer`
+
+  Specifies a custom transfer to use if the API server URL matches according to
+  `git config --get-urlmatch lfs.standalonetransfer <apiurl>`.  `git-lfs` will
+  not not contact the API server and instead fills stage 2 transfer actions
+  with empty `href` fields.
+
 ## Defining a Custom Transfer Type
 
 A custom transfer process is defined under a settings group called
@@ -118,11 +125,14 @@ the configuration.
 The message will look like this:
 
 ```json
-{ "event": "init", "operation": "download", "concurrent": true, "concurrenttransfers": 3 }
+{ "event": "init", "operation": "download", "remote": "origin", "concurrent": true, "concurrenttransfers": 3 }
 ```
 
 * `event`: Always `init` to identify this message
 * `operation`: will be `upload` or `download` depending on transfer direction
+* `remote`: The Git remote.  It can be a remote name like `origin` or an URL
+  like `ssh://git.example.com//path/to/repo`.  A standalone transfer agent can
+  use it to determine the location of remote files.
 * `concurrent`: reflects the value of `lfs.customtransfer.<name>.concurrent`, in
   case the process needs to know
 * `concurrenttransfers`: reflects the value of `lfs.concurrenttransfers`, for if
@@ -168,7 +178,7 @@ like this:
   conventions, but can be interpreted however the custom transfer agent wishes
   (this is an NFS example, but it doesn't even have to be an URL). Generally,
   `href` will give the primary connection details, with `header` containing any
-  miscellaneous information needed.
+  miscellaneous information needed.  `href` is empty for standalone transfers.
 
 The transfer process should post one or more [progress messages](#progress) and
 then a final completion message as follows:
@@ -207,7 +217,7 @@ like this:
   conventions, but can be interpreted however the custom transfer agent wishes
   (this is an NFS example, but it doesn't even have to be an URL). Generally,
   `href` will give the primary connection details, with `header` containing any
-  miscellaneous information needed.
+  miscellaneous information needed.  `href` is empty for standalone transfers.
 
 Note there is no file path included in the download request; the transfer
 process should create a file itself and return the path in the final response
