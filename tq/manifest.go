@@ -53,10 +53,10 @@ func NewManifest() *Manifest {
 		return nil
 	}
 
-	return NewManifestWithClient(cli)
+	return NewManifestWithClient(cli, "")
 }
 
-func NewManifestWithClient(apiClient *lfsapi.Client) *Manifest {
+func NewManifestWithClient(apiClient *lfsapi.Client, remote string) *Manifest {
 	m := &Manifest{
 		apiClient:            apiClient,
 		tqClient:             &tqClient{Client: apiClient},
