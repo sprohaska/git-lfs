@@ -1,6 +1,7 @@
 package tq
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/git-lfs/git-lfs/lfsapi"
@@ -73,7 +74,15 @@ func NewManifestWithClient(apiClient *lfsapi.Client, remote string) *Manifest {
 			m.concurrentTransfers = v
 		}
 		m.basicTransfersOnly = git.Bool("lfs.basictransfersonly", false)
+
 		m.standaloneTransferAgent, _ = git.Get("lfs.standalonetransferagent")
+		if remote != "" {
+			k := fmt.Sprintf("remote.%s.lfsstandalonetransferagent", remote)
+			if v, ok := git.Get(k); ok {
+				m.standaloneTransferAgent = v
+			}
+		}
+
 		tusAllowed = git.Bool("lfs.tustransfers", false)
 		configureCustomAdapters(git, m)
 	}
@@ -92,6 +101,10 @@ func NewManifestWithClient(apiClient *lfsapi.Client, remote string) *Manifest {
 		configureTusAdapter(m)
 	}
 	return m
+}
+
+func (m *Manifest) IsStandaloneTransfer() bool {
+	return m.standaloneTransferAgent != ""
 }
 
 // GetAdapterNames returns a list of the names of adapters available to be created
