@@ -11,11 +11,12 @@ const UrlUnknown = "<unknown>"
 
 // An Endpoint describes how to access a Git LFS server.
 type Endpoint struct {
-	Url            string
-	SshUserAndHost string
-	SshPath        string
-	SshPort        string
-	Operation      string
+	Url                string
+	SshUserAndHost     string
+	SshPath            string
+	SshPort            string
+	Operation          string
+	StandaloneTransfer string
 }
 
 func endpointOperation(e Endpoint, method string) string {

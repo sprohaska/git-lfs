@@ -436,12 +436,15 @@ func ensureFile(smudgePath, cleanPath string, allowMissing bool) error {
 // given "endpoint". If no state has been explicitly set, an "unknown" state
 // will be returned instead.
 func getVerifyStateFor(endpoint lfsapi.Endpoint) verifyState {
+	uc := config.NewURLConfig(cfg.Git)
+
+	// When using a standalone custom transfer agent there is no LFS server.
 	if v, _ := cfg.Git.Get("lfs.standalonetransferagent"); len(v) > 0 {
-		// When using a standalone custom transfer agent there is no LFS server.
 		return verifyStateDisabled
 	}
-
-	uc := config.NewURLConfig(cfg.Git)
+	if _, ok := uc.Get("lfs", endpoint.Url, "standalonetransfer"); ok {
+		return verifyStateDisabled
+	}
 
 	v, ok := uc.Get("lfs", endpoint.Url, "locksverify")
 	if !ok {

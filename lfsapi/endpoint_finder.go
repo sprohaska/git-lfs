@@ -145,6 +145,12 @@ func (e *endpointGitFinder) GitRemoteURL(remote string, forpush bool) string {
 }
 
 func (e *endpointGitFinder) NewEndpointFromCloneURL(rawurl string) Endpoint {
+	ep := e.newEndpointFromCloneURL(rawurl)
+	ep.StandaloneTransfer = e.findStandaloneTransfer(ep.Url)
+	return ep
+}
+
+func (e *endpointGitFinder) newEndpointFromCloneURL(rawurl string) Endpoint {
 	ep := e.NewEndpoint(rawurl)
 	if ep.Url == UrlUnknown {
 		return ep
@@ -165,6 +171,12 @@ func (e *endpointGitFinder) NewEndpointFromCloneURL(rawurl string) Endpoint {
 }
 
 func (e *endpointGitFinder) NewEndpoint(rawurl string) Endpoint {
+	ep := e.newEndpoint(rawurl)
+	ep.StandaloneTransfer = e.findStandaloneTransfer(ep.Url)
+	return ep
+}
+
+func (e *endpointGitFinder) newEndpoint(rawurl string) Endpoint {
 	rawurl = e.ReplaceUrlAlias(rawurl)
 	u, err := url.Parse(rawurl)
 	if err != nil {
@@ -184,6 +196,20 @@ func (e *endpointGitFinder) NewEndpoint(rawurl string) Endpoint {
 		// Just passthrough to preserve
 		return Endpoint{Url: rawurl}
 	}
+}
+
+func (e *endpointGitFinder) findStandaloneTransfer(url string) string {
+	if e.git == nil {
+		return ""
+	}
+
+	uc := config.NewURLConfig(e.git)
+	v, ok := uc.Get("lfs", url, "standalonetransfer")
+	if !ok {
+		return ""
+	}
+
+	return v
 }
 
 func (e *endpointGitFinder) AccessFor(rawurl string) Access {
