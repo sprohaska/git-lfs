@@ -3,6 +3,7 @@ package lfsapi
 import (
 	"fmt"
 	"net/url"
+	slashpath "path"
 	"regexp"
 	"strings"
 )
@@ -105,4 +106,11 @@ func endpointFromHttpUrl(u *url.URL) Endpoint {
 func endpointFromGitUrl(u *url.URL, e *endpointGitFinder) Endpoint {
 	u.Scheme = e.gitProtocol
 	return Endpoint{Url: u.String()}
+}
+
+func endpointFromLocalPath(path string) Endpoint {
+	if !strings.HasSuffix(path, ".git") {
+		path = slashpath.Join(path, ".git")
+	}
+	return Endpoint{Url: fmt.Sprintf("file://%s", path)}
 }
